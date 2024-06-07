@@ -1,10 +1,19 @@
 // src/pages/ChatPage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Button, TextField, Box, List, ListItem, ListItemText } from '@mui/material';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const ChatPage = () => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        axios.get('/api/sessions').then(response => {
+            setMessages(response.data);
+        });
+    }, []);
 
     const sendMessage = async () => {
         if (input.trim() === '') return;
@@ -12,37 +21,42 @@ const ChatPage = () => {
         const newMessage = { sender: 'user', text: input };
         setMessages([...messages, newMessage]);
 
-        try {
-            const response = await axios.post('http://localhost:5001/api/chat', { message: input });
-            const botMessage = { sender: 'bot', text: response.data.reply };
-            setMessages([...messages, newMessage, botMessage]);
-        } catch (error) {
-            console.error('Error sending message:', error);
-            const botMessage = { sender: 'bot', text: 'Error communicating with the server' };
-            setMessages([...messages, newMessage, botMessage]);
-        }
+        const response = await axios.post('/api/chat', { message: input });
+        const botMessage = { sender: 'bot', text: response.data.reply };
+        setMessages([...messages, newMessage, botMessage]);
 
         setInput('');
     };
 
+    const endChat = () => {
+        axios.post('/api/end-chat').then(() => {
+            navigate('/ended-chats');
+        });
+    };
+
     return (
-        <div className="chat-page">
-            <div className="chat-window">
+        <Box sx={{ padding: 2 }}>
+            <List sx={{ maxHeight: '70vh', overflow: 'auto' }}>
                 {messages.map((msg, index) => (
-                    <div key={index} className={`message ${msg.sender}`}>
-                        {msg.text}
-                    </div>
+                    <ListItem key={index}>
+                        <ListItemText primary={msg.text} secondary={msg.sender} />
+                    </ListItem>
                 ))}
-            </div>
-            <div className="input-area">
-                <input
-                    type="text"
+            </List>
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                <TextField
+                    fullWidth
+                    variant="outlined"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
+                    placeholder="Type a message"
                 />
-                <button onClick={sendMessage}>Send</button>
-            </div>
-        </div>
+                <Button variant="contained" onClick={sendMessage} sx={{ ml: 2 }}>Send</Button>
+            </Box>
+            <Button variant="contained" color="secondary" onClick={endChat} sx={{ mt: 2 }}>
+                End Chat
+            </Button>
+        </Box>
     );
 };
 

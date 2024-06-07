@@ -1,18 +1,23 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ChatPage from './pages/ChatPage';
+import EndedChats from './pages/EndedChats';
+import ActivityDashboard from './pages/ActivityDashboard';
+import LandingPage from './pages/LandingPage';
+import { Container } from '@mui/material';
 
 function App() {
     return (
         <Router>
-            <div className="App">
+            <Container>
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/chat" element={<ChatPage />} />
+                    <Route path="/ended-chats" element={<EndedChats />} />
+                    <Route path="/activity-dashboard" element={<ActivityDashboard />} />
                 </Routes>
-            </div>
+            </Container>
         </Router>
     );
 }
